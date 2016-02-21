@@ -1,0 +1,351 @@
+{
+    "devices.1.instances.0.commandClasses.32.data.level": {
+      "value": 0,
+      "type": "int",
+      "invalidateTime": 1455605460,
+      "updateTime": 1456014517
+    },
+    "devices.1.instances.0.commandClasses.32.data.srcNodeId": {
+      "value": 4,
+      "type": "int",
+      "invalidateTime": 1455605461,
+      "updateTime": 1456014517
+    },
+    "devices.1.instances.0.commandClasses.32.data.srcInstanceId": {
+      "value": 0,
+      "type": "int",
+      "invalidateTime": 1455605461,
+      "updateTime": 1456014517
+    },
+    "devices.4.data.isAwake": {
+      "value": false,
+      "type": "bool",
+      "invalidateTime": 1455606415,
+      "updateTime": 1456036466
+    },
+    "devices.4.data.lastSend": {
+      "value": 42049053,
+      "type": "int",
+      "invalidateTime": 1455606415,
+      "updateTime": 1456036466
+    },
+    "devices.4.data.lastNonceGet": {
+      "value": 42048045,
+      "type": "int",
+      "invalidateTime": 1455606415,
+      "updateTime": 1456036466
+    },
+    "devices.4.data.lastReceived": {
+      "value": 0,
+      "type": "int",
+      "invalidateTime": 1455606415,
+      "updateTime": 1456036466
+    },
+    "devices.4.instances.0.commandClasses.48.data.1": {
+      "value": null,
+      "type": "empty",
+      "sensorTypeString": {
+        "value": "General purpose",
+        "type": "string",
+        "invalidateTime": 1455606538,
+        "updateTime": 1455606539
+      },
+      "level": {
+        "value": false,
+        "type": "bool",
+        "invalidateTime": 1456036200,
+        "updateTime": 1456036226
+      },
+      "invalidateTime": 1455606538,
+      "updateTime": 1456036226
+    },
+    "devices.4.instances.0.commandClasses.49.data.1": {
+      "value": null,
+      "type": "empty",
+      "sensorTypeString": {
+        "value": "Temperature",
+        "type": "string",
+        "invalidateTime": 1455606540,
+        "updateTime": 1455606541
+      },
+      "val": {
+        "value": 19.1,
+        "type": "float",
+        "invalidateTime": 1455606540,
+        "updateTime": 1456035988
+      },
+      "deviceScale": {
+        "value": 1,
+        "type": "int",
+        "invalidateTime": 1455606540,
+        "updateTime": 1456035988
+      },
+      "scale": {
+        "value": 0,
+        "type": "int",
+        "invalidateTime": 1455606540,
+        "updateTime": 1455606541
+      },
+      "scaleString": {
+        "value": "°C",
+        "type": "string",
+        "invalidateTime": 1455606540,
+        "updateTime": 1456035988
+      },
+      "invalidateTime": 1456033800,
+      "updateTime": 1456035988
+    },
+    "devices.4.instances.0.commandClasses.49.data.3": {
+      "value": null,
+      "type": "empty",
+      "sensorTypeString": {
+        "value": "Luminiscence",
+        "type": "string",
+        "invalidateTime": 1455606540,
+        "updateTime": 1455606541
+      },
+      "val": {
+        "value": 0,
+        "type": "float",
+        "invalidateTime": 1455606540,
+        "updateTime": 1456035986
+      },
+      "deviceScale": {
+        "value": 1,
+        "type": "int",
+        "invalidateTime": 1455606540,
+        "updateTime": 1456035986
+      },
+      "scale": {
+        "value": 1,
+        "type": "int",
+        "invalidateTime": 1455606540,
+        "updateTime": 1456035986
+      },
+      "scaleString": {
+        "value": "Lux",
+        "type": "string",
+        "invalidateTime": 1455606540,
+        "updateTime": 1456035986
+      },
+      "invalidateTime": 1456033800,
+      "updateTime": 1456035986
+    },
+    "devices.4.instances.0.commandClasses.49.data.5": {
+      "value": null,
+      "type": "empty",
+      "sensorTypeString": {
+        "value": "Humidity",
+        "type": "string",
+        "invalidateTime": 1455606541,
+        "updateTime": 1455606542
+      },
+      "val": {
+        "value": 34,
+        "type": "float",
+        "invalidateTime": 1455606541,
+        "updateTime": 1456035988
+      },
+      "deviceScale": {
+        "value": 0,
+        "type": "int",
+        "invalidateTime": 1455606541,
+        "updateTime": 1456035988
+      },
+      "scale": {
+        "value": 0,
+        "type": "int",
+        "invalidateTime": 1455606541,
+        "updateTime": 1456035988
+      },
+      "scaleString": {
+        "value": "%",
+        "type": "string",
+        "invalidateTime": 1455606541,
+        "updateTime": 1456035988
+      },
+      "invalidateTime": 1456033800,
+      "updateTime": 1456035988
+    },
+    "devices.4.instances.0.commandClasses.113.data.7": {
+      "value": null,
+      "type": "empty",
+      "typeString": {
+        "value": "Burglar",
+        "type": "string",
+        "invalidateTime": 1455606541,
+        "updateTime": 1455606542
+      },
+      "status": {
+        "value": 0,
+        "type": "int",
+        "invalidateTime": 1455606541,
+        "updateTime": 1456014517
+      },
+      "eventMask": {
+        "value": 128,
+        "type": "int",
+        "invalidateTime": 1455606541,
+        "updateTime": 1455606542
+      },
+      "event": {
+        "value": 7,
+        "type": "int",
+        "invalidateTime": 1455606541,
+        "updateTime": 1456014517
+      },
+      "eventString": {
+        "value": "Motion detected",
+        "type": "string",
+        "invalidateTime": 1455606541,
+        "updateTime": 1456014517
+      },
+      "eventParameters": {
+        "value": [ 7 ],
+        "type": "binary",
+        "invalidateTime": 1455606541,
+        "updateTime": 1456014517
+      },
+      "eventSequence": {
+        "value": null,
+        "type": "empty",
+        "invalidateTime": 1455606541,
+        "updateTime": 1455606542
+      },
+      "invalidateTime": 1455606541,
+      "updateTime": 1456014517
+    },
+    "devices.4.instances.0.commandClasses.128.data": {
+      "value": null,
+      "type": "empty",
+      "supported": {
+        "value": true,
+        "type": "bool",
+        "invalidateTime": 1456012800,
+        "updateTime": 1455606417
+      },
+      "version": {
+        "value": 1,
+        "type": "int",
+        "invalidateTime": 1456012800,
+        "updateTime": 1455606533
+      },
+      "security": {
+        "value": true,
+        "type": "bool",
+        "invalidateTime": 1455606416,
+        "updateTime": 1455606418
+      },
+      "interviewDone": {
+        "value": true,
+        "type": "bool",
+        "invalidateTime": 1455606416,
+        "updateTime": 1455606542
+      },
+      "interviewCounter": {
+        "value": 9,
+        "type": "int",
+        "invalidateTime": 1455606416,
+        "updateTime": 1455606537
+      },
+      "lastChange": {
+        "value": 1455606542,
+        "type": "int",
+        "invalidateTime": 1456012800,
+        "updateTime": 1455606542
+      },
+      "history": {
+        "value": null,
+        "type": "empty",
+        "100": {
+          "value": 1455774501,
+          "type": "int",
+          "invalidateTime": 1456012800,
+          "updateTime": 1455774501
+        },
+        "99": {
+          "value": 1455776181,
+          "type": "int",
+          "invalidateTime": 1456012800,
+          "updateTime": 1455776181
+        },
+        "98": {
+          "value": 1455774021,
+          "type": "int",
+          "invalidateTime": 1456012800,
+          "updateTime": 1455774021
+        },
+        "96": {
+          "value": 1455776421,
+          "type": "int",
+          "invalidateTime": 1456012800,
+          "updateTime": 1455776421
+        },
+        "90": {
+          "value": 1456007185,
+          "type": "int",
+          "invalidateTime": 1456012800,
+          "updateTime": 1456007185
+        },
+        "91": {
+          "value": 1455971185,
+          "type": "int",
+          "invalidateTime": 1456012800,
+          "updateTime": 1455971185
+        },
+        "93": {
+          "value": 1455852385,
+          "type": "int",
+          "invalidateTime": 1456012800,
+          "updateTime": 1455852385
+        },
+        "92": {
+          "value": 1455913585,
+          "type": "int",
+          "invalidateTime": 1456012800,
+          "updateTime": 1455913585
+        },
+        "88": {
+          "value": 1456035986,
+          "type": "int",
+          "invalidateTime": 1456012800,
+          "updateTime": 1456035986
+        },
+        "89": {
+          "value": 1456012946,
+          "type": "int",
+          "invalidateTime": 1456012945,
+          "updateTime": 1456012946
+        },
+        "invalidateTime": 1456012800,
+        "updateTime": 1455606542
+      },
+      "last": {
+        "value": 88,
+        "type": "int",
+        "invalidateTime": 1456012800,
+        "updateTime": 1456035986
+      },
+      "invalidateTime": 1456012800,
+      "updateTime": 1455606417
+    },
+    "devices.4.instances.0.commandClasses.132.data.lastWakeup": {
+      "value": 1456036466,
+      "type": "int",
+      "invalidateTime": 1455778656,
+      "updateTime": 1456036466
+    },
+    "devices.4.instances.0.commandClasses.132.data.lastSleep": {
+      "value": 1456036466,
+      "type": "int",
+      "invalidateTime": 1455778656,
+      "updateTime": 1456036466
+    },
+    "devices.4.instances.0.commandClasses.152.data.toFollow": {
+      "value": false,
+      "type": "bool",
+      "invalidateTime": 1455606416,
+      "updateTime": 1456036226
+    },
+  "updateTime": 1456036634
+}
