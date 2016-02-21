@@ -7,3 +7,4 @@ I'm only implementing the minimum feature set necessary for querying a Aeotec
 multisensor / PIR motion sensor. If I get additional Z-Wave hardware, I may
 extend the library to be more full-featured. In the meantime, I'll be happy to
 accept pull requests.
+
