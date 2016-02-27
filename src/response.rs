@@ -17,6 +17,13 @@ pub struct BurglarAlarmData {
   json: Json,
 }
 
+// TODO: Doc, accessors
+/// Command class 48, payload 1.
+pub struct GeneralPurposeBinaryData {
+  json: Json,
+}
+
+// TODO: This API is a little obtuse.
 impl DataResponse {
   pub fn new(json: Json) -> DataResponse {
     DataResponse { json: json }
@@ -57,6 +64,24 @@ impl DataResponse {
     alarm_data.and_then(|data| Some(BurglarAlarmData { json: data.clone() }))
   }
 
+  /// Get the "general purpose" (0x01) binary sensor (0x30) data, if present.
+  pub fn get_general_purpose_binary(&self, device: u8, instance: u8) ->
+    Option<GeneralPurposeBinaryData> {
+    let name = format!(
+        "devices.{}.instances.{}.commandClasses.48.data.1",
+        device, instance);
+
+    let sensor_data = if self.is_full_response() {
+      let path = DataResponse::path_query_parts(&name);
+      self.json.find_path(&path)
+    } else {
+      self.json.find(&name)
+    };
+
+    sensor_data.and_then(
+        |data| Some(GeneralPurposeBinaryData { json: data.clone() }))
+  }
+
   /// Get a reference to the underlying Json.
   pub fn get_json(&self) -> &Json {
     &self.json
@@ -76,7 +101,7 @@ impl BurglarAlarmData {
       .and_then(|n| Some(n != 0))
   }
 
-  /// Get when the update time was last updated
+  /// Get when the sensor value was last updated
   pub fn get_status_updated(&self) -> Option<Timestamp> {
     self.json.find_path(&["status", "updateTime"])
       .and_then(|j| j.as_i64())
@@ -87,6 +112,27 @@ impl BurglarAlarmData {
     &self.json
   }
 }
+
+impl GeneralPurposeBinaryData {
+  /// Get whether the sensor is triggered.
+  pub fn get_status(&self) -> Option<bool> {
+    self.json.find_path(&["level", "value"])
+      .and_then(|j| j.as_boolean())
+  }
+
+  /// Get when the sensor value was last updated
+  pub fn get_status_updated(&self) -> Option<Timestamp> {
+    self.json.find_path(&["level", "updateTime"])
+      .and_then(|j| j.as_i64())
+  }
+
+  /// Get a reference to the underlying Json.
+  pub fn get_json(&self) -> &Json {
+    &self.json
+  }
+}
+
+
 
 #[cfg(test)]
 mod tests {
@@ -186,6 +232,39 @@ mod tests {
               } \
             } \
           } \
+        }, \
+        \"5\": { \
+          \"instances\": { \
+            \"0\": { \
+              \"commandClasses\": { \
+                \"48\": { \
+                  \"name\": \"SensorBinary\", \
+                  \"data\": { \
+                  \"1\": { \
+                    \"value\": null, \
+                    \"type\": \"empty\", \
+                    \"sensorTypeString\": { \
+                      \"value\": \"General purpose\", \
+                      \"type\": \"string\", \
+                      \"invalidateTime\": 1456552384, \
+                      \"updateTime\": 1456552385 \
+                    }, \
+                    \"level\": { \
+                      \"value\": true, \
+                      \"type\": \"bool\", \
+                      \"invalidateTime\": 1456552384, \
+                      \"updateTime\": 1456569899 \
+                    }, \
+                    \"invalidateTime\": 1456552384, \
+                    \"updateTime\": 1456569899 \
+                  }, \
+                  \"invalidateTime\": 1456552382, \
+                  \"updateTime\": 1456552383 \
+                  } \
+                } \
+              } \
+            } \
+          } \
         } \
       }, \
       \"updateTime\": 1456036584 \
@@ -203,6 +282,14 @@ mod tests {
     let response = DataResponse::from_str(FULL_JSON).unwrap();
     let alarm = response.get_burglar_alarm(4, 0);
     assert!(alarm.is_some());
+  }
+
+  #[test]
+  fn get_general_purpose_binary_data_on_full_payload() {
+    let response = DataResponse::from_str(FULL_JSON).unwrap();
+    let binary = response.get_general_purpose_binary(5, 0);
+    assert!(binary.is_some());
+    assert!(binary.unwrap().get_status().unwrap());
   }
 
   #[test]
@@ -262,6 +349,24 @@ mod tests {
         \"invalidateTime\": 1455606541, \
         \"updateTime\": 1456014517 \
       }, \
+      \"devices.5.instances.0.commandClasses.48.data.1\": { \
+        \"value\": null, \
+        \"type\": \"empty\", \
+        \"sensorTypeString\": { \
+          \"value\": \"General purpose\", \
+          \"type\": \"string\", \
+          \"invalidateTime\": 1456552384, \
+          \"updateTime\": 1456552385 \
+        }, \
+        \"level\": { \
+          \"value\": false, \
+          \"type\": \"bool\", \
+          \"invalidateTime\": 1456552384, \
+          \"updateTime\": 1456553060 \
+        }, \
+        \"invalidateTime\": 1456552384, \
+        \"updateTime\": 1456553060 \
+      }, \
     \"updateTime\": 1456036584 \
     }";
 
@@ -276,6 +381,14 @@ mod tests {
     let response = DataResponse::from_str(PARTIAL_JSON).unwrap();
     let alarm = response.get_burglar_alarm(4, 0);
     assert!(alarm.is_some());
+  }
+
+  #[test]
+  fn get_general_purpose_binary_data_on_partial_payload() {
+    let response = DataResponse::from_str(PARTIAL_JSON).unwrap();
+    let binary = response.get_general_purpose_binary(5, 0);
+    assert!(binary.is_some());
+    assert!(!binary.unwrap().get_status().unwrap());
   }
 
   #[test]

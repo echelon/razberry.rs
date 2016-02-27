@@ -32,5 +32,11 @@ pub fn main() {
 
   println!("Burglar Alarm Status: {:?}", alarm.get_status());
   println!("Burglar Alarm Status Updated: {:?}", alarm.get_status_updated());
+
+  let binary_sensor = data.get_general_purpose_binary(5, 0).unwrap();
+
+  println!("Binary Sensor (general purpose): {:?}", binary_sensor.get_status());
+  println!("Binary Sensor (general purpose) updated: {:?}",
+           binary_sensor.get_status_updated());
 }
 
