@@ -1,6 +1,9 @@
 // Copyright (c) 2016 Brandon Thomas <bt@brand.io>
 
 pub use response::DataResponse;
+pub use response::GatewayState;
+pub use response::PartialGatewayState;
+pub use response::ResponseError;
 pub use response::Timestamp;
 pub use std::time::Duration;
 pub use url::ParseError;
@@ -104,7 +107,8 @@ impl RazberryClient {
   /**
    * Peform a login. If the attempt is successful, store the session token.
    */
-  pub fn login(&mut self, username: &str, password: &str) -> Result<(), RazberryError> {
+  pub fn login(&mut self, username: &str, password: &str)
+      -> Result<(), RazberryError> {
     let login_request = try!(json::encode(&LoginRequest {
       login: username.to_string(),
       password: password.to_string(),
@@ -129,7 +133,7 @@ impl RazberryClient {
     }
 
     // Get the session cookie from the response.
-    // TODO: Cleanup once `as_slice` becomes stable.
+    // TODO: Cleanup once 'as_slice' becomes stable.
     let mut cookies = result.headers.get::<SetCookie>().unwrap().clone();
     let mut cookie = cookies.pop();
     while cookie.is_some() {
@@ -147,6 +151,88 @@ impl RazberryClient {
   }
 
   /**
+   * Get a full data dump of the state of the Razberry gateway and all
+   * of its associated devices.
+   */
+  pub fn fetch_gateway_state(&self) -> Result<GatewayState, RazberryError> {
+    let url = try!(self.data_url(None));
+    let cookie = CookiePair::new(SESSION_COOKIE_NAME.to_string(),
+                             self.session_token.clone().unwrap_or("".to_string()));
+
+    let mut result = try!(self.client.get(url)
+        .header(Cookie(vec![cookie]))
+        .send()
+        .map_err(|_| RazberryError::ClientError));
+
+    match result.status {
+      StatusCode::Ok => {}, // Continue
+      StatusCode::Unauthorized => { return Err(RazberryError::BadCredentials); },
+      _ => { return Err(RazberryError::BadRequest); },
+    }
+
+    let mut body = String::new();
+    try!(result.read_to_string(&mut body)
+         .map_err(|_| RazberryError::ServerError));
+
+    GatewayState::build(&body).map_err(|_| RazberryError::ClientError)
+  }
+
+  /**
+   * Get an updated view of the state of the Razberry gateway. This
+   * fetches any state changes since the last fetch or update and
+   * patches the delta into the 'GatewayState' object.
+   */
+  pub fn update_gateway_state(&self, gateway_state: &mut GatewayState) ->
+      Result<(), RazberryError> {
+    let timestamp = gateway_state.get_end_timestamp();
+    let url = try!(self.data_url(Some(timestamp)));
+    let cookie = CookiePair::new(SESSION_COOKIE_NAME.to_string(),
+                             self.session_token.clone().unwrap_or("".to_string()));
+
+    let mut result = try!(self.client.get(url)
+        .header(Cookie(vec![cookie]))
+        .send()
+        .map_err(|_| RazberryError::ClientError));
+
+    match result.status {
+      StatusCode::Ok => {}, // Continue
+      StatusCode::Unauthorized => { return Err(RazberryError::BadCredentials); },
+      _ => { return Err(RazberryError::BadRequest); },
+    }
+
+    let mut body = String::new();
+    try!(result.read_to_string(&mut body)
+         .map_err(|_| RazberryError::ServerError));
+
+    let partial_state = try!(PartialGatewayState::build(&body, timestamp)
+        .map_err(|_| RazberryError::ClientError));
+
+    // TODO: Rethink errors.
+    gateway_state.merge(&partial_state).map_err(|_| RazberryError::ClientError)
+  }
+
+  /// Generate a data URL.
+  fn data_url(&self, timestamp: Option<i64>) -> Result<Url, RazberryError> {
+    let path = match timestamp {
+      None => "/ZWaveAPI/Data".to_string(),
+      Some(t) => format!("/ZWaveAPI/Data/{}", t),
+    };
+    UrlParser::new().base_url(&self.base_url)
+        .parse(&path)
+        .map_err(|_| RazberryError::ClientError)
+  }
+
+  /// Generate login URL.
+  fn login_url(&self) -> Result<Url, RazberryError> {
+    UrlParser::new().base_url(&self.base_url)
+        .parse("/ZAutomation/api/v1/login")
+        .map_err(|_| RazberryError::ClientError)
+  }
+
+  /* ========================= DEPRECATED ========================= */
+
+  /**
+   * XXX: DEPRECATED.
    * Get a full data dump of the state of the Razberry server and all
    * of its associated devices.
    */
@@ -155,15 +241,18 @@ impl RazberryClient {
   }
 
   /**
+   * XXX: DEPRECATED.
    * Get a partial data dump of the state changes to the Razberry
    * server and associated devices that occurred after the provided
    * timestamp.
    */
-  pub fn get_data_after(&self, timestamp: i64) -> Result<DataResponse, RazberryError> {
+  pub fn get_data_after(&self, timestamp: i64)
+      -> Result<DataResponse, RazberryError> {
     self.fetch_data(Some(timestamp))
   }
 
   /**
+   * XXX: DEPRECATED.
    * Fastest way to look up the server timestamp.
    * Calls the data endpoint with an invalid timestamp.
    */
@@ -171,6 +260,7 @@ impl RazberryClient {
     self.fetch_data(Some(20000000000))
   }
 
+  /// XXX: DEPRECATED.
   /// Do lookup at the data endpoint.
   pub fn fetch_data(&self, timestamp: Option<i64>)
       -> Result<DataResponse, RazberryError> {
@@ -194,24 +284,6 @@ impl RazberryClient {
          .map_err(|_| RazberryError::ServerError));
 
     DataResponse::from_str(&body).map_err(|_| RazberryError::ClientError)
-  }
-
-  /// Generate a data URL.
-  fn data_url(&self, timestamp: Option<i64>) -> Result<Url, RazberryError> {
-    let path = match timestamp {
-      None => "/ZWaveAPI/Data".to_string(),
-      Some(t) => format!("/ZWaveAPI/Data/{}", t),
-    };
-    UrlParser::new().base_url(&self.base_url)
-        .parse(&path)
-        .map_err(|_| RazberryError::ClientError)
-  }
-
-  /// Generate login URL.
-  fn login_url(&self) -> Result<Url, RazberryError> {
-    UrlParser::new().base_url(&self.base_url)
-        .parse("/ZAutomation/api/v1/login")
-        .map_err(|_| RazberryError::ClientError)
   }
 }
 

@@ -6,9 +6,10 @@ extern crate log;
 extern crate rustc_serialize;
 extern crate url;
 
-pub use url::Url;
 pub use client::RazberryClient;
+pub use url::Url;
 
 mod client;
 pub mod response;
+pub mod sensors;
 
