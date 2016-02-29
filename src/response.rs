@@ -12,6 +12,7 @@ pub type ParseError = BuilderError;
 /// A response from Razberry's /ZWaveAPI/Data endpoint.
 /// These responses contain the entire state of the gateway at the time
 /// of the request.
+#[derive(Clone)]
 pub struct GatewayState {
   /// Internal data.
   json: Json,
@@ -24,6 +25,7 @@ pub struct GatewayState {
 /// A response from Razberry's /ZWaveAPI/Data/{timestamp} endpoint.
 /// These responses contain only updates that ocurred after the
 /// requested timestamp.
+#[derive(Clone)]
 pub struct PartialGatewayState {
   /// Internal data.
   json: Json,

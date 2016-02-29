@@ -5,12 +5,14 @@ use rustc_serialize::json::Json;
 
 // TODO: Doc, accessors
 /// Command class 113, payload 7.
+#[derive(Clone)]
 pub struct BurglarAlarmData {
   json: Json,
 }
 
 // TODO: Doc, accessors
 /// Command class 48, payload 1.
+#[derive(Clone)]
 pub struct GeneralPurposeBinaryData {
   json: Json,
 }
