@@ -8,6 +8,8 @@ pub use response::Timestamp;
 pub use std::time::Duration;
 pub use url::ParseError;
 pub use url::Url;
+use device::Device;
+use error::RazberryError;
 use hyper::client::Client;
 use hyper::header::ContentType;
 use hyper::header::Cookie;
@@ -19,6 +21,7 @@ use hyper::mime::SubLevel;
 use hyper::mime::TopLevel;
 use hyper::mime::Value;
 use hyper::status::StatusCode;
+use rustc_serialize::json::Json;
 use rustc_serialize::json;
 use std::io::Read;
 use url::UrlParser;
@@ -30,14 +33,6 @@ pub struct RazberryClient {
   base_url: Url,
   session_token: Option<String>,
   client: Client,
-}
-
-#[derive(Debug)]
-pub enum RazberryError {
-  ClientError,
-  BadRequest,
-  BadCredentials,
-  ServerError,
 }
 
 #[derive(RustcDecodable, RustcEncodable)]
@@ -177,6 +172,37 @@ impl RazberryClient {
     GatewayState::build(&body).map_err(|_| RazberryError::ClientError)
   }
 
+  // TODO - work on the new API (in progress).
+  /// Query the initial data payload for devices (the bare /Data endpoint).
+  pub fn load_devices(&self) -> Result<Vec<Device>, RazberryError> {
+    let url = self.data_url(None)?;
+
+    let cookie = CookiePair::new(
+      SESSION_COOKIE_NAME.to_string(),
+      self.session_token.clone().unwrap_or("".to_string())
+    );
+
+    let mut result = self.client.get(url)
+        .header(Cookie(vec![cookie]))
+        .send()
+        .map_err(|_| RazberryError::ClientError)?;
+
+    match result.status {
+      StatusCode::Ok => {}, // Continue
+      StatusCode::Unauthorized => { return Err(RazberryError::BadCredentials); },
+      _ => { return Err(RazberryError::BadRequest); },
+    }
+
+    let mut body = String::new();
+
+    result.read_to_string(&mut body)
+        .map_err(|_| RazberryError::ServerError)?;
+
+    let json = Json::from_str(&body)?;
+
+    Ok(Vec::new())
+  }
+
   /**
    * Get an updated view of the state of the Razberry gateway. This
    * fetches any state changes since the last fetch or update and
@@ -236,6 +262,7 @@ impl RazberryClient {
    * Get a full data dump of the state of the Razberry server and all
    * of its associated devices.
    */
+  #[deprecated]
   pub fn get_data(&self) -> Result<DataResponse, RazberryError> {
     self.fetch_data(None)
   }
@@ -246,6 +273,7 @@ impl RazberryClient {
    * server and associated devices that occurred after the provided
    * timestamp.
    */
+  #[deprecated]
   pub fn get_data_after(&self, timestamp: i64)
       -> Result<DataResponse, RazberryError> {
     self.fetch_data(Some(timestamp))
@@ -256,12 +284,14 @@ impl RazberryClient {
    * Fastest way to look up the server timestamp.
    * Calls the data endpoint with an invalid timestamp.
    */
+  #[deprecated]
   pub fn get_server_timestamp(&self) -> Result<DataResponse, RazberryError> {
     self.fetch_data(Some(20000000000))
   }
 
   /// XXX: DEPRECATED.
   /// Do lookup at the data endpoint.
+  #[deprecated]
   pub fn fetch_data(&self, timestamp: Option<i64>)
       -> Result<DataResponse, RazberryError> {
     let url = try!(self.data_url(timestamp));
