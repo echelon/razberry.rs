@@ -1,19 +1,25 @@
 [package]
   name = "razberry"
-  version = "0.2.1"
-  authors = [ "Brandon Thomas <bt@brand.io>", "Brandon Thomas <echelon@gmail.com>" ]
+  version = "0.3.0"
+  authors = ["Brandon Thomas <bt@brand.io>", "Brandon Thomas <echelon@gmail.com>"]
   description = "An HTTP client library for the Razberry Z-Wave Hub"
-  keywords = [ "Razberry", "Z-Wave", "Raspberry", "home", "automation" ]
+  repository = "https://github.com/echelon/razberry.rs"
+  homepage = "https://github.com/echelon/razberry.rs"
+  documentation = "https://docs.rs/razberry"
+  keywords = ["Razberry", "Z-Wave", "Raspberry", "home", "automation"]
   categories = [ "api-bindings" ]
   license = "BSD-4-Clause"
   readme = "README.md"
-  repository = "https://github.com/echelon/razberry.rs"
+
+[badges]
+  travis-ci = { repository = "echelon/razberry.rs" }
 
 [lib]
   name = "razberry"
   path = "src/lib.rs"
 
 [dependencies]
+  chrono = "0.3"
   hyper = "0.10.*"
   log = "0.3.*"
   rustc-serialize = "0.3.*"
