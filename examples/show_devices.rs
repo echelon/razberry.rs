@@ -24,6 +24,14 @@ pub fn main() {
   println!("Result: {:?}", result);
   println!("Session: {:?}", session);
 
+  let devices = client.load_devices().unwrap();
+
+  println!("Loaded devices: {}", devices.len());
+
+  //for device in devices {
+  //  println!("Device: {}", device);
+  //}
+
   /*let timestamp = client.get_server_timestamp().unwrap().get_timestamp();
   println!("Server Timestamp: {:?}", timestamp);
 

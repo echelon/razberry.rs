@@ -3,6 +3,7 @@
 use chrono::UTC;
 use chrono::datetime::DateTime;
 use error::RazberryError;
+use rustc_serialize::json::Json;
 
 /// A ZWave device.
 pub struct Device {
@@ -16,9 +17,10 @@ pub struct Device {
 
 impl Device {
   /// Construct a device from JSON.
-  pub fn from_json() -> Result<Device, RazberryError> {
+  pub fn from_json(device_id: &str, json: &Json)
+      -> Result<Device, RazberryError> {
     let device = Device {
-      id: "".to_string(),
+      id: device_id.to_string(),
       name: "".to_string(),
       last_contacted: UTC::now(),
     };

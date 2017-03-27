@@ -189,7 +189,9 @@ impl RazberryClient {
 
     match result.status {
       StatusCode::Ok => {}, // Continue
-      StatusCode::Unauthorized => { return Err(RazberryError::BadCredentials); },
+      StatusCode::Unauthorized => {
+        return Err(RazberryError::BadCredentials);
+      },
       _ => { return Err(RazberryError::BadRequest); },
     }
 
@@ -200,7 +202,18 @@ impl RazberryClient {
 
     let json = Json::from_str(&body)?;
 
-    Ok(Vec::new())
+    let devices_json = json.find("devices")
+        .and_then(|d| d.as_object())
+        .ok_or(RazberryError::ServerError)?;
+
+    let mut devices = Vec::new();
+
+    for (device_id, device_json) in devices_json {
+      let device = Device::from_json(device_id, &device_json)?;
+      devices.push(device);
+    }
+
+    Ok(devices)
   }
 
   /**
