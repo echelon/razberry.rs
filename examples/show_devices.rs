@@ -28,6 +28,11 @@ pub fn main() {
 
   println!("Loaded devices: {}", devices.len());
 
+  for device in devices {
+    println!("Device: {}", device);
+    println!("Last contacted: {}", device.last_contacted);
+  }
+
   //for device in devices {
   //  println!("Device: {}", device);
   //}

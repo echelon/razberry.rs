@@ -12,6 +12,9 @@ pub enum RazberryError {
   /// The client could not parse JSON from the gateway.
   ParseError { /** Original error. */ cause: json::ParserError },
 
+  /// Bad response from the Razberry gateway.
+  BadResponse,
+
   /// Some kind of error from the Razberry gateway.
   ServerError,
 

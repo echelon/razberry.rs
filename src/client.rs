@@ -204,7 +204,7 @@ impl RazberryClient {
 
     let devices_json = json.find("devices")
         .and_then(|d| d.as_object())
-        .ok_or(RazberryError::ServerError)?;
+        .ok_or(RazberryError::BadResponse)?;
 
     let mut devices = Vec::new();
 
