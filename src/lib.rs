@@ -9,11 +9,14 @@ extern crate url;
 pub use client::RazberryClient;
 pub use url::Url;
 
+// TODO: Don't dump everything into public namespace.
 mod client;
+mod command_class;
 mod device;
 mod error;
 pub mod response;
 pub mod sensors;
 
+pub use command_class::CommandClass;
 pub use device::Device;
 pub use error::RazberryError;

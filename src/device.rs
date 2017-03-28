@@ -22,7 +22,7 @@ impl Device {
   /// Construct a device from a JSON subset taken from the full device
   /// payload endpoint, '/ZWaveAPI/Data/'. (This is not the delta update
   /// endpoint!)
-  pub fn from_json(device_id: &str, json: &Json)
+  pub fn initialize_from_json(device_id: &str, json: &Json)
       -> Result<Device, RazberryError> {
     let name = Device::get_string_property(json)?;
     let last_contacted = Device::get_last_contacted(json)?;
@@ -33,6 +33,12 @@ impl Device {
       last_contacted: last_contacted,
     };
     Ok(device)
+  }
+
+  /// Update the device from a JSON delta payload taken from the endpoint,
+  /// '/ZWaveAPI/Data/{timestamp}'.
+  pub fn process_updates(&self, json: &Json) -> Result<(), RazberryError> {
+    Ok(())
   }
 
   /// Get a string property on the device.

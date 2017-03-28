@@ -209,7 +209,7 @@ impl RazberryClient {
     let mut devices = Vec::new();
 
     for (device_id, device_json) in devices_json {
-      let device = Device::from_json(device_id, &device_json)?;
+      let device = Device::initialize_from_json(device_id, &device_json)?;
       devices.push(device);
     }
 
