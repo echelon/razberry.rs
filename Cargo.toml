@@ -1,6 +1,6 @@
 [package]
   name = "razberry"
-  version = "0.2.0"
+  version = "0.3.0"
   authors = ["Brandon Thomas <bt@brand.io>", "Brandon Thomas <echelon@gmail.com>"]
 
   description = "An HTTP client library for the Razberry Z-Wave Hub"
