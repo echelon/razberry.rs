@@ -3,6 +3,7 @@
 use chrono::NaiveDateTime;
 use chrono::UTC;
 use chrono::datetime::DateTime;
+use command_class::CommandClass;
 use command_classes::CommandClasses;
 use error::RazberryError;
 use rustc_serialize::json::Json;
@@ -35,16 +36,29 @@ impl Device {
         .and_then(|c| c.as_object())
         .ok_or(RazberryError::BadResponse)?;
 
-    //let mut command_classes = HashMap::new();
+    let mut command_classes = HashMap::new();
 
     // TODO: Multiple command class instances.
     // Multiple instances here are probably more common, but I want to get a
     // simple working implementation first. The API is subject to change when
     // support is added.
-    for (command_class_id, command_class) in cc_json {
-      println!("Found command class ID: {}", command_class_id);
-      let cc = CommandClasses::from_str(command_class_id);
-      println!("Found command class: {:?}", cc);
+    for (command_class_id, command_class_json) in cc_json {
+      let command_class = match CommandClasses::from_str(command_class_id) {
+        None => continue, // Unrecognized command class.
+        Some(cc) => cc,
+      };
+
+      let cc_instance = CommandClass::initialize_from_json(command_class,
+          command_class_json)?;
+
+      match cc_instance {
+        CommandClass::Unsupported => continue, // No support for this type yet.
+        _ => {},
+      }
+
+      command_classes.insert(command_class, cc_instance);
+
+      println!("Found command class: {:?}", command_class);
       //let device = Device::initialize_from_json(device_id, &device_json)?;
       //devices.push(device);
     }

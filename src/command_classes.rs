@@ -5,7 +5,7 @@ use std::fmt;
 /**
  * The different ZWave command classes supported by various devices.
  */
-#[derive(Debug)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub enum CommandClasses {
   Alarm,
   AlarmSensor,
@@ -16,6 +16,7 @@ pub enum CommandClasses {
   Clock,
   Configuration,
   FirmwareUpdate,
+  ManufacturerSpecific,
   MultiChannel,
   MultiChannelAssociation,
   NoOperation,
@@ -44,6 +45,7 @@ impl CommandClasses {
       0x7A => CommandClasses::FirmwareUpdate,
       0x70 => CommandClasses::Configuration,
       0x71 => CommandClasses::Alarm,
+      0x72 => CommandClasses::ManufacturerSpecific,
       0x73 => CommandClasses::PowerLevel,
       0x77 => CommandClasses::NodeNaming,
       0x80 => CommandClasses::Battery,
@@ -81,6 +83,7 @@ impl fmt::Display for CommandClasses {
       CommandClasses::Clock => "Clock",
       CommandClasses::Configuration => "Configuration",
       CommandClasses::FirmwareUpdate => "FirmwareUpdate",
+      CommandClasses::ManufacturerSpecific => "ManufacturerSpecific",
       CommandClasses::MultiChannel => "MultiChannel",
       CommandClasses::MultiChannelAssociation => "MultiChannelAssociation",
       CommandClasses::NoOperation => "NoOperation",
