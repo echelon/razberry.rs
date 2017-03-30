@@ -12,12 +12,15 @@ use std::fmt;
 
 /// A ZWave device.
 pub struct Device {
+  // TODO: Change all the visibilities, and hide behind locks (interior mut)
   /// The string (integer?) ID of the device in Z Way.
   pub id: String,
   /// The user-defined name of the device; reported as "givenName".
   pub name: String,
   /// The last time the device was contacted by the Z Way controller.
   pub last_contacted: DateTime<UTC>,
+  /// Command classes associated with the device.
+  pub command_classes: HashMap<CommandClasses, CommandClass>,
 }
 
 impl Device {
@@ -67,6 +70,7 @@ impl Device {
       id: device_id.to_string(),
       name: name.to_string(),
       last_contacted: last_contacted,
+      command_classes: command_classes,
     };
     Ok(device)
   }
