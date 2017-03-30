@@ -11,15 +11,13 @@ pub use url::Url;
 
 // FIXME: Don't dump everything into public namespace.
 mod client;
-mod command_class;
+mod command_classes;
 mod device;
-mod device_command_class;
 mod error;
-pub mod command_classes;
+pub mod command_class;
 pub mod response;
 pub mod sensors;
 
-pub use command_class::CommandClass;
+pub use command_classes::CommandClasses;
 pub use device::Device;
-pub use device_command_class::DeviceCommandClass;
 pub use error::RazberryError;
