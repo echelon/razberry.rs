@@ -12,6 +12,7 @@ use chrono::NaiveDateTime;
 use chrono::UTC;
 use chrono::datetime::DateTime;
 use device::Device;
+use device_update::DeviceUpdate;
 use error::RazberryError;
 use hyper::client::Client;
 use hyper::header::ContentType;
@@ -250,9 +251,15 @@ impl RazberryClient {
 
     let json = Json::from_str(&body)?;
 
-    println!("Json: {}", json);
-
     // TODO: DEVICE UPDATES!
+    let updates = DeviceUpdate::parse_updates(&json)?;
+
+    for (device_id, updates) in updates {
+      println!(">> Updates for {}", device_id);
+      for update in updates {
+        println!(">>>> {:?}", update.path);
+      }
+    }
 
     let update_time = Self::parse_update_time(&json)?;
 

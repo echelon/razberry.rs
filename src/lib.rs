@@ -13,6 +13,7 @@ pub use url::Url;
 mod client;
 mod command_classes;
 mod device;
+mod device_update;
 mod error;
 pub mod command_class;
 pub mod response;
