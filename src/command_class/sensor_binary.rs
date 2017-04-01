@@ -3,6 +3,7 @@
 use chrono::NaiveDateTime;
 use chrono::UTC;
 use chrono::datetime::DateTime;
+use device_update::DeviceUpdate;
 use error::RazberryError;
 use rustc_serialize::json::Json;
 use std::fmt;
@@ -51,7 +52,25 @@ impl SensorBinary {
     self.level
   }
 
-  pub fn process_updates(&self, json: &Json) -> Result<(), RazberryError> {
+  pub fn process_update(&mut self, update: &DeviceUpdate)
+      -> Result<(), RazberryError> {
+    if update.path.get(4) != Some(&"data") {
+      return Ok(()); // Irrelevant update.
+    }
+
+    let level = update.data.find_path(&["level", "value"])
+        .and_then(|j| j.as_boolean())
+        .ok_or(RazberryError::BadResponse)?;
+
+    let timestamp = update.data.find_path(&["level", "updateTime"])
+        .and_then(|j| j.as_i64())
+        .ok_or(RazberryError::BadResponse)?;
+
+    let dt = NaiveDateTime::from_timestamp(timestamp, 0);
+
+    self.level = level;
+    self.level_updated = DateTime::from_utc(dt, UTC);
+
     Ok(())
   }
 }

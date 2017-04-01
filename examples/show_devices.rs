@@ -1,5 +1,9 @@
 // Copyright (c) 2017 Brandon Thomas <bt@brand.io, echelon@gmail.com>
 
+/**
+ * Poll the Razberry gateway and display updates as they occur.
+ */
+
 extern crate razberry;
 
 use razberry::RazberryClient;
@@ -35,10 +39,7 @@ pub fn main() {
   loop {
     thread::sleep(Duration::from_millis(1000));
     let _r = client.poll_updates().unwrap();
-
     print_updates(&client);
-
-
   }
 }
 

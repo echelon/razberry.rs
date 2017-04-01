@@ -6,6 +6,7 @@ pub mod sensor_multilevel;
 use command_class::sensor_binary::SensorBinary;
 use command_class::sensor_multilevel::SensorMultilevel;
 use command_classes::CommandClasses;
+use device_update::DeviceUpdate;
 use error::RazberryError;
 use rustc_serialize::json::Json;
 use std::fmt;
@@ -35,6 +36,19 @@ impl CommandClass {
     };
 
     Ok(result)
+  }
+
+  // TODO TEST
+  // TODO NON-PUBLIC
+  /// Process an update.
+  pub fn process_update(&mut self, update: &DeviceUpdate)
+      -> Result<(), RazberryError> {
+    match self {
+      &mut CommandClass::SensorBinary { ref mut inner } => {
+        inner.process_update(update)
+      },
+      _ => Ok(()), // Unsupported
+    }
   }
 }
 

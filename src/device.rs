@@ -83,11 +83,10 @@ impl Device {
   pub fn process_updates(&mut self, updates: Vec<DeviceUpdate>)
       -> Result<(), RazberryError> {
     for update in updates {
-      let path = update.path;
-      match path.get(0) {
+      match update.path.get(0) {
         Some(&"data") => {
           // Device meta updates.
-          if path.get(1) == Some(&"lastReceived") {
+          if update.path.get(1) == Some(&"lastReceived") {
             let timestamp = update.data.find("updateTime")
                 .and_then(|d| d.as_i64())
                 .ok_or(RazberryError::BadResponse)?;
@@ -97,12 +96,30 @@ impl Device {
         },
         Some(&"instances") => {
           // Device command class updates.
-
+          if update.path.get(2) == Some(&"commandClasses") {
+            self.process_command_class_update(&update);
+          }
         },
         _ => continue, // Unknown update
       }
     }
     Ok(())
+  }
+
+  fn process_command_class_update(&mut self, update: &DeviceUpdate)
+      -> Result<(), RazberryError> {
+    let command_class_id = update.path.get(3) // get the numeric value
+        .ok_or(RazberryError::BadResponse)?;
+
+    let command_class_id = match CommandClasses::from_str(command_class_id) {
+      None => return Ok(()), // Unsupported command class
+      Some(cc) => cc,
+    };
+
+    match self.command_classes.get_mut(&command_class_id) {
+      None => Ok(()), // Not loaded at initialization. Could indicate problem.
+      Some(cc) => cc.process_update(update),
+    }
   }
 
   /// Get a string property on the device.
