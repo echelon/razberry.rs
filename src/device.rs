@@ -60,10 +60,6 @@ impl Device {
       }
 
       command_classes.insert(command_class, cc_instance);
-
-      println!("Found command class: {:?}", command_class);
-      //let device = Device::initialize_from_json(device_id, &device_json)?;
-      //devices.push(device);
     }
 
     let device = Device {

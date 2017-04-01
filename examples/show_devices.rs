@@ -33,6 +33,7 @@ pub fn main() {
     println!("\tLast contacted: {}", device.last_contacted);
     for (command_class_id, command_class) in device.command_classes {
       println!("\tCommand class: {}", command_class_id);
+      println!("\tCommand class: {}", command_class);
     }
   }
 

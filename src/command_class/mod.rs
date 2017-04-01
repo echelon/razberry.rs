@@ -8,10 +8,12 @@ use command_class::sensor_multilevel::SensorMultilevel;
 use command_classes::CommandClasses;
 use error::RazberryError;
 use rustc_serialize::json::Json;
+use std::fmt;
 
 /**
  * Polymorphic struct that can contain any command class instance.
  */
+#[derive(Debug)]
 pub enum CommandClass {
   SensorBinary { inner: SensorBinary },
   SensorMultilevel { inner: SensorMultilevel },
@@ -33,5 +35,14 @@ impl CommandClass {
     };
 
     Ok(result)
+  }
+}
+
+impl fmt::Display for CommandClass {
+  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    match self {
+      &CommandClass::SensorBinary { ref inner } => inner.fmt(f),
+      _ => write!(f, "CommandClass (no fmt::Display impl)"),
+    }
   }
 }
