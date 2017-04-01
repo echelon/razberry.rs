@@ -51,7 +51,7 @@ pub struct RazberryClient {
 
   /// The last time Z-wave device updates were successfully polled.
   /// Timestamp is that of the Razberry endpoint (not the program's CPU time).
-  last_update: Option<DateTime<UTC>>,
+  pub last_update: Option<DateTime<UTC>>, // TODO: Public visibility is temporary
 }
 
 #[derive(RustcDecodable, RustcEncodable)]
@@ -166,14 +166,8 @@ impl RazberryClient {
     Err(RazberryError::ServerError)
   }
 
-  // TODO: API is a WIP. Prefer interior mutability.
-  pub fn get_devices(&self) -> Vec<&Device> {
-    self.devices.iter()
-        .map(|d| d)
-        .collect()
-  }
-
   // TODO - work on the new API (in progress).
+  // TODO: Test.
   /// Query the initial data payload for devices (the bare /Data endpoint).
   pub fn load_devices(&mut self) -> Result<(), RazberryError> {
     let url = self.data_url(None)?;
@@ -223,11 +217,58 @@ impl RazberryClient {
   }
 
   // TODO: Use threadsafe, interior mutability instead.
+  // TODO: Test.
   pub fn poll_updates(&mut self) -> Result<(), RazberryError> {
-    // TODO
+    // Can't poll for updates unless we've loaded devices first.
+    let dt = self.last_update.ok_or(RazberryError::ClientError)?;
+    let timestamp = dt.timestamp();
+
+    let url = self.data_url(Some(timestamp))?;
+
+    let cookie = CookiePair::new(
+      SESSION_COOKIE_NAME.to_string(),
+      self.session_token.clone().unwrap_or("".to_string())
+    );
+
+    let mut result = self.client.get(url)
+        .header(Cookie(vec![cookie]))
+        .send()
+        .map_err(|_| RazberryError::ClientError)?;
+
+    match result.status {
+      StatusCode::Ok => {}, // Continue
+      StatusCode::Unauthorized => {
+        return Err(RazberryError::BadCredentials);
+      },
+      _ => return Err(RazberryError::BadRequest),
+    }
+
+    let mut body = String::new();
+
+    result.read_to_string(&mut body)
+        .map_err(|_| RazberryError::ServerError)?;
+
+    let json = Json::from_str(&body)?;
+
+    println!("Json: {}", json);
+
+    // TODO: DEVICE UPDATES!
+
+    let update_time = Self::parse_update_time(&json)?;
+
+    self.last_update = Some(update_time);
     Ok(())
   }
 
+  // TODO: API is a WIP. Prefer interior mutability.
+  /// Get devices that have been loaded by the client.
+  pub fn get_devices(&self) -> Vec<&Device> {
+    self.devices.iter()
+        .map(|d| d)
+        .collect()
+  }
+
+  // TODO: Unit test this. Make sure Chrono::DateTime.timestamp() equals the original.
   /// Parse the updated time from either JSON endpoint.
   fn parse_update_time(json: &Json) -> Result<DateTime<UTC>, RazberryError> {
     let timestamp = json.find_path(&["updateTime"])

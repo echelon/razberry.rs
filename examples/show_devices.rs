@@ -27,21 +27,32 @@ pub fn main() {
   println!("Session: {:?}", session);
 
   let _r = client.load_devices().unwrap();
-  let devices = client.get_devices();
 
-  println!("Loaded devices: {}", devices.len());
+  print_updates(&client);
 
+  println!("\nUpdate loop...\n");
+
+  loop {
+    thread::sleep(Duration::from_millis(1000));
+    let _r = client.poll_updates().unwrap();
+
+    print_updates(&client);
+
+
+  }
+}
+
+pub fn print_updates(client: &RazberryClient) {
+  let devices = &client.get_devices();
+  println!("\n--------");
+  println!("Number devices: {}", devices.len());
+  println!("Last update: {}", client.last_update.unwrap());
+  println!("----");
   for device in devices {
     println!("Device: {}", device);
     println!("  Last contacted: {}", device.last_contacted);
     for (command_class_id, command_class) in &device.command_classes {
       println!("  Command class: {}", command_class);
     }
-  }
-
-  println!("\nUpdate loop...\n");
-
-  loop {
-    thread::sleep(Duration::from_millis(1000));
   }
 }
