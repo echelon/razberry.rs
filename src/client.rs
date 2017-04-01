@@ -27,6 +27,7 @@ use hyper::mime::Value;
 use hyper::status::StatusCode;
 use rustc_serialize::json::Json;
 use rustc_serialize::json;
+use std::collections::HashMap;
 use std::io::Read;
 use url::UrlParser;
 
@@ -48,7 +49,8 @@ pub struct RazberryClient {
   client: Client,
 
   /// Z-wave devices that have been loaded.
-  devices: Vec<Device>,
+  /// This is a map of device ID to device.
+  devices: HashMap<String, Device>,
 
   /// The last time Z-wave device updates were successfully polled.
   /// Timestamp is that of the Razberry endpoint (not the program's CPU time).
@@ -86,7 +88,7 @@ impl RazberryClient {
         base_url: url,
         session_token: None,
         client: Client::new(),
-        devices: Vec::new(),
+        devices: HashMap::new(),
         last_update: None,
       }
     })
@@ -202,11 +204,11 @@ impl RazberryClient {
         .and_then(|d| d.as_object())
         .ok_or(RazberryError::BadResponse)?;
 
-    let mut devices = Vec::new();
+    let mut devices = HashMap::new();
 
     for (device_id, device_json) in devices_json {
       let device = Device::initialize_from_json(device_id, &device_json)?;
-      devices.push(device);
+      devices.insert(device_id.to_string(), device);
     }
 
     let update_time = Self::parse_update_time(&json)?;
@@ -255,9 +257,11 @@ impl RazberryClient {
     let updates = DeviceUpdate::parse_updates(&json)?;
 
     for (device_id, updates) in updates {
-      println!(">> Updates for {}", device_id);
-      for update in updates {
-        println!(">>>> {:?}", update.path);
+      match self.devices.get_mut(&device_id) {
+        None => continue, // Perhaps a new device was added. We must ignore.
+        Some(ref mut device) => {
+          let _r = device.process_updates(updates)?;
+        },
       }
     }
 
@@ -270,7 +274,7 @@ impl RazberryClient {
   // TODO: API is a WIP. Prefer interior mutability.
   /// Get devices that have been loaded by the client.
   pub fn get_devices(&self) -> Vec<&Device> {
-    self.devices.iter()
+    self.devices.values()
         .map(|d| d)
         .collect()
   }

@@ -5,20 +5,27 @@ use chrono::UTC;
 use chrono::datetime::DateTime;
 use command_class::CommandClass;
 use command_classes::CommandClasses;
+use device_update::DeviceUpdate;
 use error::RazberryError;
 use rustc_serialize::json::Json;
 use std::collections::HashMap;
 use std::fmt;
 
-/// A ZWave device.
+/**
+ * A Z-Wave Device.
+ */
 pub struct Device {
   // TODO: Change all the visibilities, and hide behind locks (interior mut)
   /// The string (integer?) ID of the device in Z Way.
   pub id: String,
+
   /// The user-defined name of the device; reported as "givenName".
   pub name: String,
+
   /// The last time the device was contacted by the Z Way controller.
+  /// This is the value of "data.lastReceived.updateTime"
   pub last_contacted: DateTime<UTC>,
+
   /// Command classes associated with the device.
   pub command_classes: HashMap<CommandClasses, CommandClass>,
 }
@@ -73,7 +80,28 @@ impl Device {
 
   /// Update the device from a JSON delta payload taken from the endpoint,
   /// '/ZWaveAPI/Data/{timestamp}'.
-  pub fn process_updates(&self, json: &Json) -> Result<(), RazberryError> {
+  pub fn process_updates(&mut self, updates: Vec<DeviceUpdate>)
+      -> Result<(), RazberryError> {
+    for update in updates {
+      let path = update.path;
+      match path.get(0) {
+        Some(&"data") => {
+          // Device meta updates.
+          if path.get(1) == Some(&"lastReceived") {
+            let timestamp = update.data.find("updateTime")
+                .and_then(|d| d.as_i64())
+                .ok_or(RazberryError::BadResponse)?;
+            let dt = NaiveDateTime::from_timestamp(timestamp, 0);
+            self.last_contacted = DateTime::from_utc(dt, UTC);
+          }
+        },
+        Some(&"instances") => {
+          // Device command class updates.
+
+        },
+        _ => continue, // Unknown update
+      }
+    }
     Ok(())
   }
 
