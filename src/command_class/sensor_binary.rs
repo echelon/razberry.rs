@@ -18,6 +18,7 @@ pub struct SensorBinary {
 }
 
 impl SensorBinary {
+  // TODO(MERGE-BLOCKER): Test.
   /// Construct a SensorBinary command class.
   pub fn initialize_from_json(json: &Json)
       -> Result<SensorBinary, RazberryError> {

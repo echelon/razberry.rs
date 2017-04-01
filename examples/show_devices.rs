@@ -4,6 +4,8 @@ extern crate razberry;
 
 use razberry::RazberryClient;
 use std::env;
+use std::thread;
+use std::time::Duration;
 
 pub fn main() {
   let args : Vec<_> = env::args().collect();
@@ -24,35 +26,22 @@ pub fn main() {
   println!("Result: {:?}", result);
   println!("Session: {:?}", session);
 
-  let devices = client.load_devices().unwrap();
+  let _r = client.load_devices().unwrap();
+  let devices = client.get_devices();
 
   println!("Loaded devices: {}", devices.len());
 
   for device in devices {
     println!("Device: {}", device);
-    println!("\tLast contacted: {}", device.last_contacted);
-    for (command_class_id, command_class) in device.command_classes {
-      println!("\tCommand class: {}", command_class_id);
-      println!("\tCommand class: {}", command_class);
+    println!("  Last contacted: {}", device.last_contacted);
+    for (command_class_id, command_class) in &device.command_classes {
+      println!("  Command class: {}", command_class);
     }
   }
 
-  //for device in devices {
-  //  println!("Device: {}", device);
-  //}
+  println!("\nUpdate loop...\n");
 
-  /*let timestamp = client.get_server_timestamp().unwrap().get_timestamp();
-  println!("Server Timestamp: {:?}", timestamp);
-
-  let data = client.get_data().unwrap();
-  let alarm = data.get_burglar_alarm(4, 0).unwrap();
-
-  println!("Burglar Alarm Status: {:?}", alarm.get_status());
-  println!("Burglar Alarm Status Updated: {:?}", alarm.get_status_updated());
-
-  let binary_sensor = data.get_general_purpose_binary(5, 0).unwrap();
-
-  println!("Binary Sensor (general purpose): {:?}", binary_sensor.get_status());
-  println!("Binary Sensor (general purpose) updated: {:?}",
-    binary_sensor.get_status_updated());*/
+  loop {
+    thread::sleep(Duration::from_millis(1000));
+  }
 }
