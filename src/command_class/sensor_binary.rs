@@ -52,6 +52,8 @@ impl SensorBinary {
     self.level
   }
 
+  /// Process the updates from the client.
+  /// Should not be publicly used.
   pub fn process_update(&mut self, update: &DeviceUpdate)
       -> Result<(), RazberryError> {
     if update.path.get(4) != Some(&"data") {
@@ -79,5 +81,92 @@ impl fmt::Display for SensorBinary {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     write!(f, "SensorBinary(level: {}, updated:{})",
       self.level, self.level_updated)
+  }
+}
+
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+  use chrono::UTC;
+
+  #[test]
+  fn test_initialize_from_json() {
+    // A subset of the JSON for a binary sensor.
+    let json = r#"
+      {
+        "name": "SensorBinary",
+        "data": {
+          "value": null,
+          "1": {
+            "value": null,
+            "type": "empty",
+            "sensorTypeString": {
+              "value": "General purpose",
+              "type": "string",
+              "invalidateTime": 1456552384,
+              "updateTime": 1456552385
+            },
+            "level": {
+              "value": false,
+              "type": "bool",
+              "invalidateTime": 1456552384,
+              "updateTime": 1465265727
+            },
+            "invalidateTime": 1456552384,
+            "updateTime": 1465265727
+          },
+          "invalidateTime": 1456552382,
+          "updateTime": 1456552383
+        }
+      }
+    "#;
+
+    let json = Json::from_str(json).unwrap();
+    let sensor = SensorBinary::initialize_from_json(&json).unwrap();
+
+    assert_eq!(false, sensor.get_level())
+  }
+
+  #[test]
+  fn test_process_update() {
+    let mut sensor = SensorBinary {
+      level: true,
+      level_updated: UTC::now(),
+    };
+
+    assert_eq!(true, sensor.get_level());
+
+    let json = r#"
+      {
+        "value": null,
+        "type": "empty",
+        "sensorTypeString": {
+          "value": "General purpose",
+          "type": "string",
+          "invalidateTime": 1487401953,
+          "updateTime": 1487401954
+        },
+        "level": {
+          "value": false,
+          "type": "bool",
+          "invalidateTime": 1489636200,
+          "updateTime": 1491289442
+        },
+        "invalidateTime": 1487401953,
+        "updateTime": 1491289442
+      }
+    "#;
+
+    let json = Json::from_str(json).unwrap();
+
+    let update = DeviceUpdate {
+      path: vec!["instances", "0", "commandClasses", "48", "data", "1"],
+      data: &json,
+    };
+
+    sensor.process_update(&update);
+
+    assert_eq!(false, sensor.get_level());
   }
 }
