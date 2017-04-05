@@ -11,7 +11,6 @@ pub use url::Url;
 use hyper::client::Client;
 use hyper::header::ContentType;
 use hyper::header::Cookie;
-use hyper::header::CookiePair;
 use hyper::header::SetCookie;
 use hyper::mime::Attr;
 use hyper::mime::Mime;
@@ -21,7 +20,6 @@ use hyper::mime::Value;
 use hyper::status::StatusCode;
 use rustc_serialize::json;
 use std::io::Read;
-use url::UrlParser;
 
 const DEFAULT_PORT : u32 = 8083u32;
 const SESSION_COOKIE_NAME : &'static str = "ZWAYSession";
@@ -134,20 +132,36 @@ impl RazberryClient {
 
     // Get the session cookie from the response.
     // TODO: Cleanup once 'as_slice' becomes stable.
-    let mut cookies = result.headers.get::<SetCookie>().unwrap().clone();
-    let mut cookie = cookies.pop();
-    while cookie.is_some() {
-      {
-        let c = cookie.unwrap();
-        if &c.name == SESSION_COOKIE_NAME {
-          self.session_token = Some(c.value);
+    let cookies = result.headers.get::<SetCookie>().unwrap().clone();
+
+    for cookie in cookies.iter() {
+      match Self::parse_cookie_value(cookie) {
+        None => continue,
+        Some((name, value)) => {
+          if name != SESSION_COOKIE_NAME {
+            continue;
+          }
+          self.session_token = Some(value);
           return Ok(());
         }
       }
-      cookie = cookies.pop();
     }
 
     Err(RazberryError::ServerError)
+  }
+
+  fn parse_cookie_value(cookie: &str) -> Option<(String, String)> {
+    let cookie_parts = cookie.split("; ").collect::<Vec<&str>>();
+
+    if let Some(name_value) = cookie_parts.first().map(|v| v.to_string()) {
+      let split = name_value.split("=").collect::<Vec<&str>>();
+      let name = split.get(0);
+      let value = split.get(1);
+      if name.is_some() && value.is_some() {
+        return Some((name.unwrap().to_string(), value.unwrap().to_string()));
+      }
+    }
+    None
   }
 
   /**
@@ -156,11 +170,13 @@ impl RazberryClient {
    */
   pub fn fetch_gateway_state(&self) -> Result<GatewayState, RazberryError> {
     let url = try!(self.data_url(None));
-    let cookie = CookiePair::new(SESSION_COOKIE_NAME.to_string(),
-                             self.session_token.clone().unwrap_or("".to_string()));
+    let session_token = self.session_token.as_ref()
+        .ok_or(RazberryError::ClientError)?;
 
     let mut result = try!(self.client.get(url)
-        .header(Cookie(vec![cookie]))
+        .header(Cookie(vec![
+          format!("{}={}", SESSION_COOKIE_NAME, session_token)
+        ]))
         .send()
         .map_err(|_| RazberryError::ClientError));
 
@@ -186,11 +202,14 @@ impl RazberryClient {
       Result<(), RazberryError> {
     let timestamp = gateway_state.get_end_timestamp();
     let url = try!(self.data_url(Some(timestamp)));
-    let cookie = CookiePair::new(SESSION_COOKIE_NAME.to_string(),
-                             self.session_token.clone().unwrap_or("".to_string()));
+
+    let session_token = self.session_token.as_ref()
+        .ok_or(RazberryError::ClientError)?;
 
     let mut result = try!(self.client.get(url)
-        .header(Cookie(vec![cookie]))
+        .header(Cookie(vec![
+          format!("{}={}", SESSION_COOKIE_NAME, session_token)
+        ]))
         .send()
         .map_err(|_| RazberryError::ClientError));
 
@@ -217,15 +236,13 @@ impl RazberryClient {
       None => "/ZWaveAPI/Data".to_string(),
       Some(t) => format!("/ZWaveAPI/Data/{}", t),
     };
-    UrlParser::new().base_url(&self.base_url)
-        .parse(&path)
+    self.base_url.join(&path)
         .map_err(|_| RazberryError::ClientError)
   }
 
   /// Generate login URL.
   fn login_url(&self) -> Result<Url, RazberryError> {
-    UrlParser::new().base_url(&self.base_url)
-        .parse("/ZAutomation/api/v1/login")
+    self.base_url.join("/ZAutomation/api/v1/login")
         .map_err(|_| RazberryError::ClientError)
   }
 
@@ -265,11 +282,13 @@ impl RazberryClient {
   pub fn fetch_data(&self, timestamp: Option<i64>)
       -> Result<DataResponse, RazberryError> {
     let url = try!(self.data_url(timestamp));
-    let cookie = CookiePair::new(SESSION_COOKIE_NAME.to_string(),
-                             self.session_token.clone().unwrap_or("".to_string()));
+    let session_token = self.session_token.as_ref()
+        .ok_or(RazberryError::ClientError)?;
 
     let mut result = try!(self.client.get(url)
-        .header(Cookie(vec![cookie]))
+        .header(Cookie(vec![
+          format!("{}={}", SESSION_COOKIE_NAME, session_token)
+        ]))
         .send()
         .map_err(|_| RazberryError::ClientError));
 
@@ -301,6 +320,28 @@ mod tests {
   #[test]
   fn client_with_hostname_and_port() {
     assert!(RazberryClient::new("localhost", 1234u32).is_ok())
+  }
+
+  #[test]
+  fn test_good_cookie_parsing() {
+    let cookie = "ZWAYSession=foo-bar-baz; Path=/; HttpOnly";
+    let parsed = RazberryClient::parse_cookie_value(cookie);
+    assert!(parsed.is_some());
+
+    let pair = parsed.unwrap();
+    assert_eq!("ZWAYSession", pair.0);
+    assert_eq!("foo-bar-baz", pair.1);
+  }
+
+  #[test]
+  fn test_bad_cookie_parsing() {
+    let cookie = "";
+    let parsed = RazberryClient::parse_cookie_value(cookie);
+    assert!(parsed.is_none());
+
+    let cookie = "invalid; invalid";
+    let parsed = RazberryClient::parse_cookie_value(cookie);
+    assert!(parsed.is_none());
   }
 }
 

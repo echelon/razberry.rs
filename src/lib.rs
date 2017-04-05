@@ -1,6 +1,5 @@
 // Copyright (c) 2016 Brandon Thomas <bt@brand.io>
 
-#[macro_use]
 extern crate hyper;
 extern crate log;
 extern crate rustc_serialize;
