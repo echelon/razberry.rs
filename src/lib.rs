@@ -19,6 +19,7 @@ pub mod command_class;
 pub mod response;
 pub mod sensors;
 
+pub use command_class::CommandClass;
 pub use command_classes::CommandClasses;
 pub use device::Device;
 pub use error::RazberryError;
